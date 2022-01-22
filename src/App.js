@@ -1,31 +1,33 @@
 import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Header from './components/Header';
 import Tasks from './components/Tasks';
 import AddTask from './components/AddTask';
-import { useState } from "react"
+import Footer from './components/Footer';
+import About from './components/About';
+import { useState, useEffect } from "react"
+import jsonTasks from './db.json'
 
 function App() {
   const [showAddTask, setShowAddTask] = useState(false)
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      text: 'Doctors appointment',
-      day: 'Feb 5th at 1:10pm',
-      reminder: true
-    },
-    {
-      id: 2,
-      text: 'DoctorsDoctors appointment',
-      day: 'Feb 5th at 2:20pm',
-      reminder: true
-    },
-    {
-      id: 3,
-      text: 'DoctorsDoctorsDoctors appointment',
-      day: 'Feb 5th at 3:30pm',
-      reminder: false
+  const [tasks, setTasks] = useState([])
+
+  useEffect(() => {
+    const getTasks = async () => {
+      const tasksFromServer = await fetchTasks()
+      setTasks(tasksFromServer)
     }
-  ])
+
+    getTasks()
+  }, [])
+
+  const fetchTasks = async () => {
+    // const res = await fetch('task-endpoint')
+    // const data = await res.json()
+    const data = jsonTasks.tasks
+
+    return data;
+  }
 
   const addTask = (task) => {
     const id = Math.floor(Math.random() * 10000) + 1
@@ -45,18 +47,30 @@ function App() {
   }
 
   return (
-    <div className="container">
-      {/* <h1>Hello {name}</h1> */}
-      {/* <h1>Hello { x ? 'Yes' : 'No'}</h1> */}
-      <Header title="Task tracker" showAdd={showAddTask} onAdd={() => setShowAddTask(!showAddTask)} />
+    <Router>
+      <div className="container">
+        {/* <h1>Hello {name}</h1> */}
+        {/* <h1>Hello { x ? 'Yes' : 'No'}</h1> */}
+        <Header title="Task tracker" showAdd={showAddTask} onAdd={() => setShowAddTask(!showAddTask)} />
 
-      {showAddTask ? <AddTask onAdd={addTask}></AddTask> : ''}
+        <Routes>
+          <Route path='/' exact element={
+            <>
+              {showAddTask ? <AddTask onAdd={addTask}></AddTask> : ''}
 
-      {tasks.length > 0 ?
-        <Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder}></Tasks>
-        : 'No tasks to show'
-      }
-    </div>
+              {tasks.length > 0 ?
+                <Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder}></Tasks>
+                : 'No tasks to show'
+              }
+            </>
+          }></Route>
+
+          <Route path='/about' element={<About></About>}></Route>
+        </Routes>
+
+        <Footer></Footer>
+      </div>
+    </Router>
   );
 }
 
